@@ -384,3 +384,124 @@
 
 .save-block-btn:hover:not(:disabled) { background: rgba(212,168,67,0.2); }
 .save-block-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Batch mode ───────────────────────────────────────────────────────────── */
+.batch-section {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.batch-toggle-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 12px 24px;
+  cursor: pointer;
+  text-align: left;
+  letter-spacing: 0.04em;
+  transition: color 0.12s;
+}
+.batch-toggle-btn:hover { color: var(--text-secondary); }
+.batch-toggle-btn.active { color: var(--gold-dim); }
+
+.batch-body {
+  padding: 0 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.batch-pair {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.batch-pair.running { border-color: var(--gold-dim); }
+.batch-pair.done   { border-color: var(--layer-resonance); }
+.batch-pair.error  { border-color: var(--layer-tension); }
+
+.batch-pair-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.batch-pair-num { color: var(--text-dim); letter-spacing: 0.08em; }
+.batch-status-run { color: var(--gold); }
+.batch-status-done { font-weight: 600; }
+.batch-status-err { color: var(--layer-tension); }
+
+.batch-remove {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  margin-left: auto;
+  font-size: 12px;
+  padding: 2px 5px;
+}
+.batch-remove:hover { color: var(--layer-tension); }
+
+.batch-inputs {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.batch-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  resize: none;
+  outline: none;
+  line-height: 1.4;
+  font-family: inherit;
+}
+.batch-input:focus { border-color: var(--gold-dim); }
+
+.batch-vs {
+  color: var(--text-dim);
+  font-size: 14px;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+
+.batch-result-mini {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  font-size: 10px;
+}
+
+.brm-axiom {
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.brm-meta {
+  display: flex;
+  gap: 10px;
+  color: var(--text-dim);
+}
+
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.batch-run-btn {
+  flex: 1;
+  padding: 8px 16px;
+}

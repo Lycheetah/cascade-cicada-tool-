@@ -119,11 +119,27 @@ export function checkLayerDependencies(layers, mode = 'framework') {
  *           (max +8%) — connections to known truths make claims more load-bearing.
  * Step 7 — AXIOM cap: block cannot exceed AXIOM×1.2 (or 999 for frontier).
  */
+export const FALSIFIABILITY_CAP = 70
+
+/**
+ * Check if the AXIOM layer is unfalsifiable — triggers the gate.
+ * Returns true if the block's AXIOM is marked unfalsifiable by the AI.
+ */
+export function isAxiomUnfalsifiable(layers) {
+  if (!layers || layers.length === 0) return false
+  return layers[0]?.falsifiable === false
+}
+
 export function computeBlockScore(layers, mode = 'framework') {
   if (!layers || layers.length === 0) return 0
 
-  const axiomScore = getLayerScore(layers[0], mode)
+  let axiomScore = getLayerScore(layers[0], mode)
   if (!axiomScore || axiomScore === 0) return 0  // no axiom = no block
+
+  // Falsifiability Gate — AXIOM capped at 70 if unfalsifiable
+  if (isAxiomUnfalsifiable(layers)) {
+    axiomScore = Math.min(axiomScore, FALSIFIABILITY_CAP)
+  }
 
   // Step 2 — Dependency caps
   const foundationRaw = getLayerScore(layers[1], mode)
@@ -212,6 +228,35 @@ export function computeFileScore(blocks, mode = 'framework') {
   }).filter(s => s > 0)
   if (scores.length === 0) return 0
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+/**
+ * Confidence-weighted file score.
+ * Blocks that have been adversarially challenged receive a confidence weight
+ * based on CI stability: stable=1.0, uncertain=0.75, inflated=0.5.
+ * Blocks without CI data are treated as weight=0.85 (slight skepticism).
+ * Pinned blocks get a 1.1 weight bonus — user has explicitly endorsed them.
+ */
+export function computeConfidenceWeightedScore(blocks, adversarialData = {}) {
+  if (!blocks || blocks.length === 0) return 0
+  let weightedSum = 0
+  let totalWeight = 0
+  for (const b of blocks) {
+    const score = b.score_aggregate || 0
+    if (score === 0) continue
+    let weight = 0.85 // default: unverified
+    const ad = adversarialData[b.id]
+    if (ad) {
+      if (ad.stability === 'stable')    weight = 1.0
+      else if (ad.stability === 'uncertain') weight = 0.75
+      else if (ad.stability === 'inflated')  weight = 0.5
+    }
+    if (b.pinned) weight = Math.min(weight * 1.1, 1.2)
+    weightedSum += score * weight
+    totalWeight += weight
+  }
+  if (totalWeight === 0) return 0
+  return Math.round(weightedSum / totalWeight)
 }
 
 export function computePyramidScore(files, mode = 'framework') {

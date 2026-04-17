@@ -22,6 +22,12 @@ contextBridge.exposeInMainWorld('cascade', {
     setFrameworkRefs: (data) => ipcRenderer.invoke('blocks:setFrameworkRefs', data),
     updateNotes: (data) => ipcRenderer.invoke('blocks:updateNotes', data),
     duplicate: (id) => ipcRenderer.invoke('blocks:duplicate', id),
+    appendHistory: (data) => ipcRenderer.invoke('blocks:appendHistory', data),
+    saveVersion: (data) => ipcRenderer.invoke('blocks:saveVersion', data),
+    getVersions: (id) => ipcRenderer.invoke('blocks:getVersions', id),
+    pin: (data) => ipcRenderer.invoke('blocks:pin', data),
+    setTags: (data) => ipcRenderer.invoke('blocks:setTags', data),
+    updatePosition: (data) => ipcRenderer.invoke('blocks:updatePosition', data),
   },
   onion: {
     list: (blockId) => ipcRenderer.invoke('onion:list', blockId),
@@ -36,5 +42,16 @@ contextBridge.exposeInMainWorld('cascade', {
   },
   export: {
     save: (data) => ipcRenderer.invoke('export:save', data),
+    fullDump: () => ipcRenderer.invoke('export:fullDump'),
+  },
+  audit: {
+    log: (data) => ipcRenderer.invoke('audit:log', data),
+    get: () => ipcRenderer.invoke('audit:get'),
+  },
+  api: {
+    status: () => ipcRenderer.invoke('api:status'),
+    start:  () => ipcRenderer.invoke('api:start'),
+    stop:   () => ipcRenderer.invoke('api:stop'),
   },
 })
+

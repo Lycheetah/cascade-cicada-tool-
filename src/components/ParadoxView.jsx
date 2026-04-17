@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { paradoxSeek } from '../scoring/ai'
 import './ParadoxView.css'
 
+const BLANK_PAIR = () => ({ id: Date.now() + Math.random(), a: '', b: '', context: '', result: null, status: 'idle' })
+
 export default function ParadoxView() {
   const [claimA, setClaimA] = useState('')
   const [claimB, setClaimB] = useState('')
@@ -10,6 +12,11 @@ export default function ParadoxView() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  // Batch mode
+  const [batchPairs, setBatchPairs] = useState([BLANK_PAIR(), BLANK_PAIR()])
+  const [batchRunning, setBatchRunning] = useState(false)
+  const [batchError, setBatchError] = useState('')
+  const [showBatch, setShowBatch] = useState(false)
 
   // For saving to pyramid
   const [pyramids, setPyramids] = useState([])
@@ -51,6 +58,38 @@ export default function ParadoxView() {
       frameworkRefs: ['cascade'],
     })
     setSaved(true)
+  }
+
+  async function runBatch() {
+    const validPairs = batchPairs.filter(p => p.a.trim() && p.b.trim())
+    if (validPairs.length === 0) return
+    setBatchRunning(true); setBatchError('')
+    // Mark all as running
+    setBatchPairs(prev => prev.map(p => validPairs.find(v => v.id === p.id) ? { ...p, status: 'running', result: null } : p))
+    try {
+      await Promise.all(validPairs.map(async (pair) => {
+        try {
+          const res = await paradoxSeek(pair.a.trim(), pair.b.trim(), pair.context.trim())
+          setBatchPairs(prev => prev.map(p => p.id === pair.id ? { ...p, result: res, status: 'done' } : p))
+        } catch (e) {
+          setBatchPairs(prev => prev.map(p => p.id === pair.id ? { ...p, status: 'error', error: e.message } : p))
+        }
+      }))
+    } catch (e) { setBatchError(e.message) }
+    setBatchRunning(false)
+  }
+
+  function addPair() {
+    if (batchPairs.length >= 5) return
+    setBatchPairs(prev => [...prev, BLANK_PAIR()])
+  }
+
+  function removePair(id) {
+    setBatchPairs(prev => prev.filter(p => p.id !== id))
+  }
+
+  function updatePair(id, field, val) {
+    setBatchPairs(prev => prev.map(p => p.id === id ? { ...p, [field]: val } : p))
   }
 
   const srsColor = result
@@ -242,6 +281,55 @@ export default function ParadoxView() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Batch mode */}
+      <div className="batch-section">
+        <button className={`batch-toggle-btn ${showBatch ? 'active' : ''}`} onClick={() => setShowBatch(v => !v)}>
+          {showBatch ? '▴ Batch mode' : '▾ Batch mode'} — run up to 5 paradox pairs in parallel
+        </button>
+        {showBatch && (
+          <div className="batch-body">
+            {batchPairs.map((pair, i) => {
+              const pairSrsColor = pair.result
+                ? pair.result.srs >= 0.75 ? '#34d399' : pair.result.srs >= 0.5 ? '#facc15' : '#ef4444'
+                : '#888'
+              return (
+                <div key={pair.id} className={`batch-pair ${pair.status}`}>
+                  <div className="batch-pair-header">
+                    <span className="batch-pair-num">#{i + 1}</span>
+                    {pair.status === 'running' && <span className="batch-status-run">⊛ Running…</span>}
+                    {pair.status === 'done' && <span className="batch-status-done" style={{ color: pairSrsColor }}>SRS {pair.result?.srs?.toFixed(2)} · {pair.result?.upgrade_confirmed ? '⊛ CONFIRMED' : '◎ PENDING'}</span>}
+                    {pair.status === 'error' && <span className="batch-status-err">Error</span>}
+                    {batchPairs.length > 2 && <button className="batch-remove" onClick={() => removePair(pair.id)}>×</button>}
+                  </div>
+                  <div className="batch-inputs">
+                    <textarea className="batch-input" placeholder="Vector A…" rows={2} value={pair.a} onChange={e => updatePair(pair.id, 'a', e.target.value)} />
+                    <span className="batch-vs">⊗</span>
+                    <textarea className="batch-input" placeholder="Vector B…" rows={2} value={pair.b} onChange={e => updatePair(pair.id, 'b', e.target.value)} />
+                  </div>
+                  {pair.result && (
+                    <div className="batch-result-mini">
+                      <div className="brm-axiom">{pair.result.axiom}</div>
+                      <div className="brm-meta">
+                        <span style={{ color: pairSrsColor }}>SRS {pair.result.srs?.toFixed(2)}</span>
+                        <span>σ {pair.result.sigma_i?.toFixed(3)}</span>
+                        <span>{pair.result.inversion_scale?.slice(0, 60)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            <div className="batch-actions">
+              {batchPairs.length < 5 && <button className="btn" onClick={addPair}>+ Add pair</button>}
+              <button className="seek-btn batch-run-btn" onClick={runBatch} disabled={batchRunning || batchPairs.every(p => !p.a.trim() || !p.b.trim())}>
+                {batchRunning ? '⊛ Running batch…' : `⊛ Run ${batchPairs.filter(p => p.a.trim() && p.b.trim()).length} pairs in parallel`}
+              </button>
+            </div>
+            {batchError && <div className="pv2-error">{batchError}</div>}
           </div>
         )}
       </div>

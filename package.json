@@ -1,6 +1,6 @@
 {
   "name": "cascade-cicada-tool",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CASCADE CICADA TOOL (TCCT) — Knowledge Operating System, Personal Pyramid Tool",
   "main": "main.js",
   "scripts": {
@@ -36,6 +36,10 @@
     },
     "mac": {
       "target": "dmg"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Education"
     }
   }
 }
