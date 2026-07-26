@@ -1,3 +1,17 @@
+> ## ⟡ THE OPEN RECORD — APRIL 2026
+>
+> CICADA — an Electron desktop tool built to work CASCADE directly, with its own roadmap and examples.
+>
+> **This repository is public on purpose.** It is part of an open body of work,
+> preserved as it stood rather than tidied away. Later thinking builds on it and
+> sometimes supersedes it — that supersedes nothing here, and retracts nothing.
+> Read it as of its date.
+>
+> Author: **Mackenzie Conor James Clark** · the Lycheetah Framework  
+> Current work: https://github.com/Lycheetah/Lycheetah-Framework
+
+---
+
 # CASCADE CICADA TOOL · TCCT
 
 **Desktop knowledge scoring engine. Built on the CASCADE epistemic framework.**
